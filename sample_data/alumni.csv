@@ -1,0 +1,5 @@
+Alumni ID,First Name,Last Name,Email,Employer,Title,Industry,Functional Expertise,Location,Meeting Preference,Max Mentees,LGBTQ+ Mentor,First-Generation
+A001,Morgan,Lee,morgan.lee@example.org,Acme Consulting,Senior Consultant,Technology,Consulting,"Boston, MA",Virtual,2,Yes,Yes
+A002,Avery,Chen,avery.chen@example.org,HealthAI,Data Scientist,Healthcare,Data Science,"San Diego, CA",Hybrid,1,No,No
+A003,Casey,Johnson,casey.johnson@example.org,Global Bank,Vice President,Financial Services,Investment Banking,"New York, NY",In Person,2,No,Yes
+A004,Riley,Garcia,riley.garcia@example.org,Bright Products,Product Director,Technology,Product Management,"Seattle, WA",Virtual,3,Yes,No
