@@ -1,1 +1,238 @@
 
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "5e8e560e",
+   "metadata": {},
+   "source": [
+    "# Mentorship Matching Demo\n",
+    "\n",
+    "This notebook is a GitHub-safe, anonymized version of the mentorship matching workflow. It contains no real student or alumni data. Use the sample CSVs for demonstration, or upload your own CSVs in Google Colab.\n",
+    "\n",
+    "**Privacy note:** never commit real survey exports, student data, alumni data, emails, IDs, or match outputs to GitHub."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1da88d83",
+   "metadata": {},
+   "source": [
+    "## 1. Setup\n",
+    "\n",
+    "Run this cell first. It makes the local `src/` package available whether the notebook is opened from the repository root or from the `notebooks/` folder."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "57f3326f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from pathlib import Path\n",
+    "import sys\n",
+    "\n",
+    "# Resolve project root for both local Jupyter and Google Colab-style execution.\n",
+    "current_dir = Path.cwd()\n",
+    "project_root = current_dir if (current_dir / \"src\").exists() else current_dir.parent\n",
+    "if str(project_root) not in sys.path:\n",
+    "    sys.path.insert(0, str(project_root))\n",
+    "\n",
+    "print(f\"Project root: {project_root}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "81830940",
+   "metadata": {},
+   "source": [
+    "## 2. Import matching modules"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "7def1648",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "\n",
+    "from src.loader import load_sample_data, load_csvs, load_from_colab_upload\n",
+    "from src.preprocessing import preprocess_students, preprocess_alumni\n",
+    "from src.scoring import score_all_pairs\n",
+    "from src.matching import assign_matches\n",
+    "from src.reporting import export_matches\n",
+    "from src.config import WEIGHTS\n",
+    "\n",
+    "pd.set_option(\"display.max_colwidth\", 120)\n",
+    "WEIGHTS"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ae676691",
+   "metadata": {},
+   "source": [
+    "## 3. Load CSVs\n",
+    "\n",
+    "Choose one workflow:\n",
+    "\n",
+    "- **Sample data:** use the bundled synthetic CSVs. Best for GitHub demos.\n",
+    "- **Upload data:** in Google Colab, upload one student CSV and one alumni/mentor CSV.\n",
+    "\n",
+    "Set `USE_UPLOAD = True` only when running in Colab and you want to upload files."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "2be724e1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "USE_UPLOAD = False  # Change to True in Google Colab to upload CSVs.\n",
+    "\n",
+    "if USE_UPLOAD:\n",
+    "    uploaded = load_from_colab_upload()\n",
+    "    if uploaded is None:\n",
+    "        raise RuntimeError(\"CSV upload is only available in Google Colab. Set USE_UPLOAD = False to use sample data.\")\n",
+    "    students_raw, alumni_raw = uploaded\n",
+    "else:\n",
+    "    students_raw, alumni_raw = load_sample_data(project_root)\n",
+    "\n",
+    "print(f\"Loaded {len(students_raw)} students and {len(alumni_raw)} alumni/mentors.\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8fe1977b",
+   "metadata": {},
+   "source": [
+    "## 4. Preview data\n",
+    "\n",
+    "These sample records are fictional. If you upload real data for private use, review it locally and do not commit it."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "211ac09a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "students_raw.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "844aa7d9",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "alumni_raw.head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "640221a4",
+   "metadata": {},
+   "source": [
+    "## 5. Clean and validate data\n",
+    "\n",
+    "The preprocessing step checks required columns, creates normalized matching fields, and standardizes mentor capacity."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "20799492",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "students = preprocess_students(students_raw)\n",
+    "alumni = preprocess_alumni(alumni_raw)\n",
+    "\n",
+    "print(\"Student columns validated. Alumni columns validated.\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8814b5bd",
+   "metadata": {},
+   "source": [
+    "## 6. Score every possible pair\n",
+    "\n",
+    "Each row below represents one possible student/mentor pairing, with an explainable rationale."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "c0aefddb",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "score_table = score_all_pairs(students, alumni)\n",
+    "score_table.head(10)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "34f9c700",
+   "metadata": {},
+   "source": [
+    "## 7. Assign matches\n",
+    "\n",
+    "This creates one recommended mentor assignment per student while respecting mentor capacity."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "11011821",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "matches = assign_matches(students, alumni)\n",
+    "matches"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0ff69f97",
+   "metadata": {},
+   "source": [
+    "## 8. Export results\n",
+    "\n",
+    "Generated outputs are written to `outputs/`, which is ignored by Git by default."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "5fd4134f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "output_path = export_matches(matches, project_root / \"outputs\" / \"matches.csv\")\n",
+    "print(f\"Exported matches to: {output_path}\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "name": "python",
+   "version": "3.x"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
