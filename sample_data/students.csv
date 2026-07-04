@@ -1,0 +1,6 @@
+Student ID,First Name,Last Name,Email,Program,Graduation Year,Career Interest,Industry Interest,Location,Preferred Meeting,Gender Identity,First-Generation,International Student,Mentor Preferences
+S001,Alex,Rivera,alex.rivera@example.edu,MBA,2027,Consulting,Technology,"Boston, MA",Virtual,Non-binary,Yes,No,Career changer with consulting experience
+S002,Priya,Patel,priya.patel@example.edu,MS Business Analytics,2026,Data Science,Healthcare,"San Diego, CA",Hybrid,Woman,No,Yes,Healthcare analytics
+S003,Jordan,Kim,jordan.kim@example.edu,MBA,2027,Marketing,Consumer Goods,"Chicago, IL",Virtual,Man,Yes,No,Brand management
+S004,Sam,Nguyen,sam.nguyen@example.edu,MS Finance,2026,Investment Banking,Financial Services,"New York, NY",In Person,Woman,No,Yes,Capital markets
+S005,Taylor,Brooks,taylor.brooks@example.edu,MBA,2028,Product Management,Technology,"Seattle, WA",Virtual,Non-binary,No,No,Startup experience
